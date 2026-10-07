@@ -95,6 +95,12 @@ function renderProviderPanel() {
       if (f.type === "select") {
         input = document.createElement("select");
         for (const o of f.options) input.append(new Option(o.label, o.value));
+      } else if (f.type === "textarea") {
+        input = document.createElement("textarea");
+        input.rows = 8;
+        input.spellcheck = false;
+        input.placeholder = f.placeholder || "";
+        if (f.maxLength) input.maxLength = f.maxLength;
       } else {
         input = document.createElement("input");
         input.type = f.type || "text";
@@ -115,6 +121,21 @@ function renderProviderPanel() {
         help.className = "field-help";
         help.textContent = f.help;
         wrap.append(help);
+      }
+      if (f.type === "textarea" && f.defaultValue) {
+        // label 안에 버튼을 두면 버튼을 눌렀을 때 입력 칸으로 초점이 옮겨 가서, 칸 밖에 둔다.
+        const reset = document.createElement("button");
+        reset.type = "button";
+        reset.className = "link-button";
+        reset.textContent = "기본값으로 되돌리기";
+        reset.addEventListener("click", () => {
+          input.value = f.defaultValue;
+          delete values[f.key];
+          persist();
+        });
+        const box = document.createElement("div");
+        box.append(wrap, reset);
+        return box;
       }
       return wrap;
     }),

@@ -3,6 +3,7 @@
 // 키는 이 브라우저에서 Anthropic API로만 전송된다.
 import { FatalTranslateError } from "./errors.js";
 import { inClaudeViewer } from "../environment.js";
+import { REQUESTS_FIELD, requestsFrom, withRequests } from "./requests.js";
 
 const SDK_URL = new URL("../../vendor/anthropic-sdk/anthropic-sdk.min.mjs", import.meta.url).href;
 
@@ -49,6 +50,7 @@ export default {
       defaultValue: DEFAULT_MODEL,
       help: "100만 토큰당 가격(입력/출력): Opus 5.5 $4/$20, Sonnet 5.5 $2/$10, Haiku 4.5 $1/$5. 영어 1만 자는 대략 2,500 토큰이에요.",
     },
+    REQUESTS_FIELD,
   ],
   maxChunkChars: 6000,
   concurrency: 3,
@@ -65,6 +67,7 @@ export default {
     if (!apiKey) throw new FatalTranslateError("Claude API 키를 넣어 주세요.");
     const model = MODELS[values.model] ? values.model : DEFAULT_MODEL;
     const config = MODELS[model];
+    const system = withRequests(SYSTEM_PROMPT, requestsFrom(values));
 
     const { default: Anthropic } = await import(SDK_URL);
     // 사용자가 직접 넣은 자기 키로 브라우저에서 바로 호출한다(서버 없음).
@@ -75,7 +78,7 @@ export default {
         const params = {
           model,
           max_tokens: 16000,
-          system: SYSTEM_PROMPT,
+          system,
           messages: [{ role: "user", content: text }],
         };
         if (config.effort) params.output_config = { effort: config.effort };

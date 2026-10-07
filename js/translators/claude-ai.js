@@ -2,6 +2,7 @@
 // API 키가 필요 없고, 보는 사람의 claude.ai 사용량을 쓴다(추가 요금 없음, 플랜의 사용 한도 적용).
 import { FatalTranslateError } from "./errors.js";
 import { inClaudeViewer } from "../environment.js";
+import { REQUESTS_FIELD, requestsFrom, withRequests } from "./requests.js";
 
 const TIERS = [
   { value: "quick", label: "빠르게 (추천)" },
@@ -38,6 +39,7 @@ export default {
       defaultValue: "quick",
       help: "'꼼꼼하게'는 더 깊이 생각하고 번역해서 부분마다 수십 초씩 걸릴 수 있어요.",
     },
+    REQUESTS_FIELD,
   ],
   maxChunkChars: 8000,
   concurrency: 1,
@@ -54,11 +56,12 @@ export default {
     const sample = await getSample();
     if (!sample) throw new FatalTranslateError("claude.ai에서 이 페이지를 열었을 때만 쓸 수 있어요.");
     const modelTier = TIERS.some((t) => t.value === values.modelTier) ? values.modelTier : "quick";
+    const instructions = withRequests(INSTRUCTIONS, requestsFrom(values));
 
     return {
       async translate(text, signal, onPartial) {
         try {
-          const { text: out, truncated } = await sample(`${INSTRUCTIONS}\n\n<document>\n${text}\n</document>`, {
+          const { text: out, truncated } = await sample(`${instructions}\n\n<document>\n${text}\n</document>`, {
             modelTier,
             signal,
             onText: onPartial ? ({ text: t }) => onPartial(t) : undefined,

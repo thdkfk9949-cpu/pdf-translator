@@ -22,6 +22,15 @@
 
 claude.ai 안(Artifact)에서 열면 외부 서버로 요청을 보낼 수 없어서 MyMemory와 Claude API는 목록에서 빠지고, 대신 claude.ai 계정의 Claude를 써요. 이때 파일 저장은 claude.ai의 저장 확인 창을 거치고, 인쇄 버튼은 숨겨져요.
 
+## 번역 요청사항
+
+Claude 엔진(Claude API, 내 claude.ai 계정)을 고르면 **번역 요청사항** 칸이 나와요. 원하는 번역 방식을 글로 적으면 그대로 따라 번역해요.
+
+- 예: "~습니다체로 써 줘", "transformer는 '트랜스포머'로, attention은 영어 그대로", "고유명사 뒤에 괄호로 원문 같이 적기"
+- 처음에는 **번역체를 피하고 사람이 쓴 한국어처럼 읽히게 하는 문체 규칙**이 들어 있어요. 내용은 원문 그대로 두고 문장만 다듬어요.
+- 고친 내용은 이 브라우저에 저장돼요. "기본값으로 되돌리기"를 누르면 처음 문구로 돌아가고, 칸을 비우면 요청사항 없이 번역해요.
+- Chrome 내장 번역과 MyMemory는 단순 기계 번역이라 요청사항을 받을 수 없어요.
+
 ## 사이트 열기 (GitHub Pages)
 
 1. 이 저장소의 **Settings → Pages**로 가요.
@@ -58,6 +67,7 @@ js/chunker.js           문단을 엔진 한 번 요청 크기로 나누기
 js/settings.js          설정을 브라우저에 저장
 js/environment.js       claude.ai 안에서 열렸는지 확인
 js/translators/         번역 엔진들 (여기에 파일을 추가하면 엔진이 늘어나요)
+                        requests.js: '번역 요청사항' 칸과 기본 문체 규칙
 vendor/                 외부 라이브러리 (pdf.js, Anthropic SDK). scripts/update-vendor.sh로 갱신
 tests/                  테스트: node --test tests/*.test.mjs
 ```

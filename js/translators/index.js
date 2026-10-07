@@ -10,10 +10,11 @@
 //   name: "표시 이름",
 //   tier: "free" | "paid",            // 선택 목록에서 무료/유료로 묶임
 //   description: "설명 한두 줄",
-//   fields: [                         // 설정 화면에 보일 입력 칸
+//   fields: [                         // 설정 화면에 보일 입력 칸 (type: text | password | select | textarea)
 //     { key: "apiKey", label: "API 키", type: "password", secret: true, required: true,
-//       placeholder: "...", help: "...", options?: [{ value, label }] }
+//       placeholder: "...", help: "...", options?: [{ value, label }], defaultValue?, maxLength? }
 //   ],
+//   // 지시를 따를 수 있는 엔진은 requests.js의 REQUESTS_FIELD를 넣으면 '번역 요청사항' 칸이 생겨요.
 //   maxChunkChars: 1000,              // 한 번 요청에 보낼 최대 글자 수
 //   concurrency: 1,                   // 동시에 보낼 요청 수
 //   delayMs: 0,                       // 요청 사이 쉬는 시간(무료 API 예의상)
