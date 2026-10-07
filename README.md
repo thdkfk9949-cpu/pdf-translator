@@ -14,10 +14,13 @@
 | Chrome 내장 번역 | 무료 | 없음 | 데스크톱 Chrome 138 이상에서만 돼요. 번역이 내 컴퓨터 안에서 이뤄져요. |
 | MyMemory | 무료 | 하루 약 5천 자 (이메일을 넣으면 약 5만 자) | 어느 브라우저에서나 돼요. 글이 MyMemory 서버로 전송돼요. |
 | Claude API | 유료 | 크레딧만큼 | 품질이 가장 좋아요. [console.anthropic.com](https://console.anthropic.com)에서 API 키를 만들고 크레딧을 충전해야 해요. |
+| Claude (내 claude.ai 계정) | 추가 요금 없음 | 내 플랜의 사용 한도 | **claude.ai에서 열었을 때만** 보여요. API 키 없이 내 claude.ai 계정의 Claude로 번역해요. |
 
 > Claude API 크레딧은 claude.ai 구독(Pro/Max)과 **별개**예요. 구독이 있어도 API는 따로 충전해야 해요.
 
 처음 방문하면 쓸 수 있는 무료 엔진이 자동으로 골라져요. Chrome이면 내장 번역, 다른 브라우저면 MyMemory가 골라져요.
+
+claude.ai 안(Artifact)에서 열면 외부 서버로 요청을 보낼 수 없어서 MyMemory와 Claude API는 목록에서 빠지고, 대신 claude.ai 계정의 Claude를 써요. 이때 파일 저장은 claude.ai의 저장 확인 창을 거치고, 인쇄 버튼은 숨겨져요.
 
 ## 사이트 열기 (GitHub Pages)
 
@@ -53,6 +56,7 @@ js/pdf-extract.js       PDF에서 페이지별 글자 읽기 (pdf.js)
 js/text-layout.js       글자 조각을 줄·문단으로 묶기
 js/chunker.js           문단을 엔진 한 번 요청 크기로 나누기
 js/settings.js          설정을 브라우저에 저장
+js/environment.js       claude.ai 안에서 열렸는지 확인
 js/translators/         번역 엔진들 (여기에 파일을 추가하면 엔진이 늘어나요)
 vendor/                 외부 라이브러리 (pdf.js, Anthropic SDK). scripts/update-vendor.sh로 갱신
 tests/                  테스트: node --test tests/*.test.mjs

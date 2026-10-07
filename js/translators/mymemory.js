@@ -1,6 +1,7 @@
 // 무료: MyMemory 번역 API (https://mymemory.translated.net). 키가 필요 없다.
 // 하루 한도: 이메일 없이 약 5,000자, 이메일을 넣으면 약 50,000자. 한 번 요청은 500바이트 이하.
 import { FatalTranslateError } from "./errors.js";
+import { inClaudeViewer } from "../environment.js";
 
 const ENDPOINT = "https://api.mymemory.translated.net/get";
 
@@ -22,6 +23,8 @@ export default {
   maxChunkChars: 450,
   concurrency: 1,
   delayMs: 250,
+  // claude.ai 화면 안에서는 외부 서버로 요청을 보낼 수 없다.
+  isSupportedHere: () => !inClaudeViewer,
 
   async checkAvailability() {
     return { ok: true };

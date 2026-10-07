@@ -1,4 +1,5 @@
-import { TRANSLATORS, getTranslator, FatalTranslateError } from "./translators/index.js";
+import { TRANSLATORS, AVAILABLE_TRANSLATORS, getTranslator, FatalTranslateError } from "./translators/index.js";
+import { inClaudeViewer } from "./environment.js";
 import { chunkParagraphs, PARAGRAPH_SEPARATOR } from "./chunker.js";
 import { loadSettings, saveSettings } from "./settings.js";
 
@@ -43,7 +44,7 @@ let running = null;
 // ---------- 번역 엔진 선택 ----------
 
 function currentTranslator() {
-  return getTranslator(els.provider.value) ?? TRANSLATORS[0];
+  return getTranslator(els.provider.value) ?? AVAILABLE_TRANSLATORS[0];
 }
 
 function valuesFor(t) {
@@ -60,7 +61,7 @@ function buildProviderSelect() {
   for (const [tier, label] of Object.entries(groups)) {
     const group = document.createElement("optgroup");
     group.label = label;
-    for (const t of TRANSLATORS.filter((x) => x.tier === tier)) {
+    for (const t of AVAILABLE_TRANSLATORS.filter((x) => x.tier === tier)) {
       group.append(new Option(t.name, t.id));
     }
     if (group.children.length) els.provider.append(group);
@@ -70,11 +71,11 @@ function buildProviderSelect() {
 async function pickInitialProvider() {
   if (settings.provider && getTranslator(settings.provider)) return settings.provider;
   // 처음 방문: 쓸 수 있는 첫 무료 엔진을 고른다.
-  for (const t of TRANSLATORS.filter((x) => x.tier === "free")) {
+  for (const t of AVAILABLE_TRANSLATORS.filter((x) => x.tier === "free")) {
     const r = await t.checkAvailability().catch(() => ({ ok: false }));
     if (r.ok) return t.id;
   }
-  return TRANSLATORS[0].id;
+  return AVAILABLE_TRANSLATORS[0].id;
 }
 
 function renderProviderPanel() {
@@ -255,7 +256,11 @@ async function translateAll(session, t, controller) {
       const chunk = queue[next++];
       setChunk(chunk, "working");
       try {
-        const text = await translateWithRetry(session, sourceOf(chunk), controller.signal);
+        const onPartial = (partial) => {
+          const dst = chunk.el?.querySelector(".dst");
+          if (dst && chunk.status === "working") dst.textContent = partial;
+        };
+        const text = await translateWithRetry(session, sourceOf(chunk), controller.signal, onPartial);
         chunk.translation = text;
         setChunk(chunk, "done");
       } catch (e) {
@@ -278,14 +283,14 @@ async function translateAll(session, t, controller) {
   return fatal;
 }
 
-async function translateWithRetry(session, text, signal) {
+async function translateWithRetry(session, text, signal, onPartial) {
   try {
-    return await session.translate(text, signal);
+    return await session.translate(text, signal, onPartial);
   } catch (e) {
-    if (signal.aborted || e instanceof FatalTranslateError) throw e;
+    if (signal.aborted || e instanceof FatalTranslateError || e?.noRetry) throw e;
     await sleep(1500, signal);
     if (signal.aborted) throw e;
-    return await session.translate(text, signal);
+    return await session.translate(text, signal, onPartial);
   }
 }
 
@@ -429,7 +434,23 @@ function buildMd() {
   return parts.join("\n");
 }
 
-function download(text, filename, type) {
+async function download(text, filename, type) {
+  // claude.ai 화면 안에서는 일반 다운로드 링크가 막혀 있어서, 저장 기능(downloads)을 거친다.
+  if (inClaudeViewer) {
+    const downloads = await globalThis.claude.use("downloads");
+    if (!downloads) {
+      setStatus("이 화면에서는 파일로 저장할 수 없어요.", true);
+      return;
+    }
+    try {
+      await downloads.save({ filename, data: text });
+      setStatus(`${filename} 파일을 저장했어요.`);
+    } catch (e) {
+      if (e?.code !== "declined") setStatus(`파일을 저장하지 못했어요: ${e?.message || e?.code}`, true);
+    }
+    return;
+  }
+
   const url = URL.createObjectURL(new Blob([text], { type: `${type};charset=utf-8` }));
   const a = document.createElement("a");
   a.href = url;
@@ -472,6 +493,8 @@ function bindEvents() {
   els.showSource.addEventListener("change", () => els.results.classList.toggle("show-source", els.showSource.checked));
   els.downloadTxt.addEventListener("click", () => download(buildTxt(), `${baseName()}.ko.txt`, "text/plain"));
   els.downloadMd.addEventListener("click", () => download(buildMd(), `${baseName()}.ko.md`, "text/markdown"));
+  // claude.ai 화면 안에서는 인쇄 창을 열 수 없다.
+  els.print.hidden = inClaudeViewer;
   els.print.addEventListener("click", () => window.print());
 
   window.addEventListener("beforeunload", (e) => {

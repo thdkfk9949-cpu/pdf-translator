@@ -2,6 +2,7 @@
 // API 키는 console.anthropic.com 에서 만든다. (claude.ai 구독과는 별개로, API 크레딧을 충전해야 함)
 // 키는 이 브라우저에서 Anthropic API로만 전송된다.
 import { FatalTranslateError } from "./errors.js";
+import { inClaudeViewer } from "../environment.js";
 
 const SDK_URL = new URL("../../vendor/anthropic-sdk/anthropic-sdk.min.mjs", import.meta.url).href;
 
@@ -52,6 +53,8 @@ export default {
   maxChunkChars: 6000,
   concurrency: 3,
   delayMs: 0,
+  // claude.ai 화면 안에서는 외부 서버로 요청을 보낼 수 없다.
+  isSupportedHere: () => !inClaudeViewer,
 
   async checkAvailability() {
     return { ok: true };
