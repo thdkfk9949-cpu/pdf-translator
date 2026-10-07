@@ -159,7 +159,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 600; }
 button.danger { color: var(--danger); }
 button.link-button {
-  margin-top: -6px; padding: 0; border: 0; background: none;
+  display: block; margin: -8px 0 12px; padding: 0; border: 0; background: none;
   color: var(--accent); font-size: 0.85rem; text-decoration: underline;
 }
 
